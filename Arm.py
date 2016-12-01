@@ -1,3 +1,6 @@
+#via http://stackoverflow.com/questions/20677795/how-do-i-compute-the-intersection-point-of-two-lines-in-python
+from __future__ import division 
+import ipdb
 '''
 Copyright (C) 2013 Travis DeWolf
 
@@ -181,7 +184,7 @@ def test():
 
     arm = Arm3Link()
 
-    # set of desired (x,y) hand positions
+    # create a grid of desired (x,y) hand positions
     x = np.arange(-.75, .75, .05)
     y = np.arange(0, .75, .05)
 
@@ -191,6 +194,15 @@ def test():
     count = 0
     total_error = 0
     # test it across the range of specified x and y values
+    def PointsInCircum(r,n=100):
+        return [[math.cos(2*np.pi/n*x)*r,math.sin(2*np.pi/n*x)*r] for x in range(0,n+1)]
+    PointsInCircum(1) 
+    # ipdb.set_trace()
+    # xv, yv = npmeshgrid(x, y)
+    
+    # [Arm3Link().inv_kin(xy) for xy in xy_grid]
+    # [Arm3Link().inv_kin(xy) for xy in xy_grid]
+    # [Arm3Link().inv_kin(xy) for xy in xy_grid]
     for xi in range(len(x)):
         for yi in range(len(y)):
             # test the inv_kin function on a range of different targets
@@ -220,3 +232,52 @@ def test():
     print('Total number of trials: ', count)
     print('Total error: ', total_error)
     print('-------------------------')
+
+
+def line(p1, p2):
+    A = (p1[1] - p2[1])
+    B = (p2[0] - p1[0])
+    C = (p1[0]*p2[1] - p2[0]*p1[1])
+    return(A, B, -C)
+
+def intersection(L1, L2):
+    D  = L1[0] * L2[1] - L1[1] * L2[0]
+    Dx = L1[2] * L2[1] - L1[1] * L2[2]
+    Dy = L1[0] * L2[2] - L1[2] * L2[0]
+    if D != 0:
+        x = Dx / D
+        y = Dy / D
+        return(x,y)
+    else:
+        return(False)
+
+def test_line_intersection():
+    L1 = line([0,1], [2,3])
+    L2 = line([2,3], [0,4])
+
+    R = intersection(L1, L2)
+    if R:
+        print("Intersection detected:", R)
+    else:
+        print("No single intersection point detected")
+
+
+def get_joint_positions(arm):
+        """This method finds the (x,y) coordinates of each joint"""
+
+        x = np.array([ 0, 
+            arm.L[0]*np.cos(arm.q[0]),
+            arm.L[0]*np.cos(arm.q[0]) + arm.L[1]*np.cos(arm.q[0]+arm.q[1]),
+            arm.L[0]*np.cos(arm.q[0]) + arm.L[1]*np.cos(arm.q[0]+arm.q[1]) + 
+                arm.L[2]*np.cos(np.sum(arm.q)) ]) + window.width/2
+
+        y = np.array([ 0, 
+            arm.L[0]*np.sin(arm.q[0]),
+            arm.L[0]*np.sin(arm.q[0]) + arm.L[1]*np.sin(arm.q[0]+arm.q[1]),
+            arm.L[0]*np.sin(arm.q[0]) + arm.L[1]*np.sin(arm.q[0]+arm.q[1]) + 
+                arm.L[2]*np.sin(np.sum(arm.q)) ])
+
+        return np.array([x, y]).astype('int')
+
+test()
+

@@ -24,16 +24,7 @@ def plot():
     """A function for plotting an arm, and having it calculate the 
     inverse kinematics such that given the mouse (x, y) position it 
     finds the appropriate joint angles to reach that point."""
-
-    # create an instance of the arm
-    arm = Arm.Arm3Link(L = np.array([300,200,100]))
-    # make our window for drawin'
-    window = pyglet.window.Window()
-    label = pyglet.text.Label('Mouse (x,y)', font_name='Futura', 
-        font_size=18, x=window.width//2, y=window.height//2,
-        anchor_x='center', anchor_y='center')
-
-    def get_joint_positions():
+    def get_joint_positions(arm):
         """This method finds the (x,y) coordinates of each joint"""
 
         x = np.array([ 0, 
@@ -49,17 +40,34 @@ def plot():
                 arm.L[2]*np.sin(np.sum(arm.q)) ])
 
         return np.array([x, y]).astype('int')
+
+    # create an instance of the arm
+    firstArm = Arm.Arm3Link(L = np.array([300,200,100]))
+    arm2 = Arm.Arm3Link(L = np.array([200,50,50]))
+    arm3 = Arm.Arm3Link(L = np.array([50,100,10]))
+    # make our window for drawin'
+    window = pyglet.window.Window()
+    label = pyglet.text.Label('Mouse (x,y)', font_name='Futura', 
+        font_size=18, x=window.width//2, y=window.height//2,
+        anchor_x='left', anchor_y='center')
+
     
-    window.jps = get_joint_positions()
+    window.firstArm = get_joint_positions(firstArm)
+    window.secondArm = get_joint_positions(arm2)
+    window.thirdArm = get_joint_positions(arm3)
 
     @window.event
     def on_draw():
         window.clear()
         label.draw()
+        draw_joint_positions(window.firstArm)
+        draw_joint_positions(window.secondArm)
+        draw_joint_positions(window.thirdArm)
+    def draw_joint_positions(joint_positions):
         for i in range(3): 
             pyglet.graphics.draw(2, pyglet.gl.GL_LINES, ('v2i', 
-                (window.jps[0][i], window.jps[1][i], 
-                 window.jps[0][i+1], window.jps[1][i+1])))
+                (joint_positions[0][i], joint_positions[1][i], 
+                 joint_positions[0][i+1], joint_positions[1][i+1])))
 
     @window.event
     def on_mouse_motion(x, y, dx, dy):
@@ -67,8 +75,8 @@ def plot():
         # to find the joint angles optimal for pointing at 
         # this position of the mouse 
         label.text = '(x,y) = (%.3f, %.3f)'%(x,y)
-        arm.q = arm.inv_kin([x - window.width/2, y]) # get new arm angles
-        window.jps = get_joint_positions() # get new joint (x,y) positions
+        firstArm.q = firstArm.inv_kin([x - window.width/2, y]) # get new arm angles
+        window.firstArm = get_joint_positions(firstArm) # get new joint (x,y) positions
 
     pyglet.app.run()
 
