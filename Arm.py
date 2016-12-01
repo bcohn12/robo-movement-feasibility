@@ -23,6 +23,16 @@ import numpy as np
 import scipy.optimize
 
 
+##helper functions
+def generate_random_xy_point(xlim,ylim):
+    x = np.random.randint(xlim[0],xlim[1],1)
+    y = np.random.randint(ylim[0],ylim[1],1)
+    return((x,y))
+
+def generate_n_random_xy_points(n):
+    return([generate_random_xy_point(xlim=[-6,6], ylim = [-6,6]) for x in range(n)])
+
+
 class Arm3Link:
 
     def __init__(self, q=None, q0=None, L=None, x_displacement=None, y_displacement=None):
@@ -53,6 +63,12 @@ class Arm3Link:
 
     def snap_arm_to_endpoint_position(self, xy_endpoint_position_tuple):
         self.q = self.inv_kin([xy_endpoint_position_tuple[0], xy_endpoint_position_tuple[1]])
+    
+
+    def snap_arm_to_new_XY_target(self):
+        arm_XY_target = generate_n_random_xy_points(1)[0]
+        self.snap_arm_to_endpoint_position(arm_XY_target)
+        return(arm_XY_target)
 
     def get_joint_positions(self):
         """This method finds the (x,y) coordinates of each joint"""
@@ -82,7 +98,7 @@ class Arm3Link:
 
 
     def get_lines_with_C(self):
-        
+
         def line(p1, p2):
             A = (p1[1] - p2[1])
             B = (p2[0] - p1[0])

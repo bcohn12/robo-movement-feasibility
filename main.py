@@ -11,12 +11,7 @@ import seaborn as sns
 
 np.random.seed(sum(map(ord, "aesthetics")))
 
-def generate_random_xy_point(xlim,ylim):
-    x = np.random.randint(xlim[0],xlim[1],1)
-    y = np.random.randint(ylim[0],ylim[1],1)
-    return((x,y))
-def generate_n_random_xy_points(n):
-    return([generate_random_xy_point(xlim=[-600,600], ylim = [-600,600]) for x in range(n)])
+
 
 def intersection(L1, L2):
     D  = L1[0] * L2[1] - L1[1] * L2[0]
@@ -55,7 +50,7 @@ def plot_one_position(line_segments, xy_pair, x_displacement, y_displacement):
     plt.close()
 
 def test_with_one_arm():
-    arm1 = Arm.Arm3Link(L = np.array([300,200,100]), x_displacement = 320, y_displacement = 0)
+    arm1 = Arm.Arm3Link(L = np.array([3,2,1]), x_displacement = 0, y_displacement = 0)
     for xy_pair in generate_n_random_xy_points(160):
         arm1.snap_arm_to_endpoint_position(xy_pair)
         list_of_line_segments = arm1.extract_line_segments()
@@ -71,13 +66,22 @@ def intersection_between_arms(arm1,arm2):
     res = [intersection(a1_lines[i], a2_lines[j]) for i in segment_indices for j in segment_indices]
     return(res)
 
+
 def arms_intersecting_test():
-    arm1 = Arm.Arm3Link(L = np.array([300,200,100]),x_displacement=320,y_displacement=0)
-    arm2 = Arm.Arm3Link(L = np.array([300,200,100]),x_displacement=320,y_displacement=0)
-    arm1_taskpoint = generate_n_random_xy_points(1)[0]
-    arm2_taskpoint = generate_n_random_xy_points(1)[0]
-    arm1.snap_arm_to_endpoint_position(arm1_taskpoint)
-    arm2.snap_arm_to_endpoint_position(arm2_taskpoint)
+    arm1 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=0,y_displacement=0)
+    arm1_taskpoint = arm1.snap_arm_to_new_XY_target()
+
+    arm2 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=0,y_displacement=0)
+    arm2_taskpoint = arm2.snap_arm_to_new_XY_target()
+
+    arm3 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=0,y_displacement=0)
+    arm3_taskpoint = arm3.snap_arm_to_new_XY_target()
+    
+
+    arm4 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=0,y_displacement=0)
+    arm4_taskpoint = arm4.snap_arm_to_new_XY_target()
+
+
     intersection_report = intersection_between_arms(arm1,arm2)
     print("intersection_report")
     print(intersection_report)
@@ -85,7 +89,12 @@ def arms_intersecting_test():
     print(arm1.extract_line_segments())
     print("arm2.extract_line_segments")
     print(arm2.extract_line_segments())
-    plot_multiple_arms([(arm1,arm1_taskpoint,"black"),(arm2, arm2_taskpoint, "green")])
+    plot_multiple_arms([
+        (arm1,arm1_taskpoint,"black"),
+        (arm2, arm2_taskpoint, "green"),
+        (arm3, arm3_taskpoint, "grey"),
+        (arm4, arm4_taskpoint, "purple")
+        ])
 
 #returns a tuple constructed with:
 # (arm1_joint_x_vals,arm1_joint_y_vals)
@@ -107,8 +116,8 @@ def plot_multiple_arms(list_of_triples_of_arm_and_XY_and_col):
     [apply_arm_and_target_to_plt(arm, arm_xy, col) for arm,arm_xy,col in list_of_triples_of_arm_and_XY_and_col]
 
     print("Just plotted ")
-    plt.xlim([-640,640])
-    plt.ylim([-640,640])
+    plt.xlim([-10,10])
+    plt.ylim([-10,10])
     plt.savefig('output/file' + str(time.time() * 1000) + '.pdf')
     plt.close()
 
