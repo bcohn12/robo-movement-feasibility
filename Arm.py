@@ -46,6 +46,25 @@ class Arm3Link:
         self.max_angles = [math.pi/2.0, math.pi, math.pi/4]
         self.min_angles = [0, 0, -math.pi/4]
 
+
+    def snap_arm_to_endpoint_position(self, xy_endpoint_position_tuple):
+        self.q = self.inv_kin([xy_endpoint_position_tuple[0], xy_endpoint_position_tuple[1]])
+
+    def get_joint_positions(self):
+        """This method finds the (x,y) coordinates of each joint"""
+        window_width = 640 #set to match original frames
+        x = np.array([ 0, 
+            self.L[0]*np.cos(self.q[0]),
+            self.L[0]*np.cos(self.q[0]) + self.L[1]*np.cos(self.q[0]+self.q[1]),
+            self.L[0]*np.cos(self.q[0]) + self.L[1]*np.cos(self.q[0]+self.q[1]) + 
+                self.L[2]*np.cos(np.sum(self.q)) ]) + window_width/2
+        y = np.array([ 0, 
+            self.L[0]*np.sin(self.q[0]),
+            self.L[0]*np.sin(self.q[0]) + self.L[1]*np.sin(self.q[0]+self.q[1]),
+            self.L[0]*np.sin(self.q[0]) + self.L[1]*np.sin(self.q[0]+self.q[1]) + 
+                self.L[2]*np.sin(np.sum(self.q)) ])
+        return(np.array([x, y]).astype('int'))
+
     def get_xy(self, q=None):
         """Returns the corresponding hand xy coordinates for
         a given set of joint angle values [shoulder, elbow, wrist],
@@ -234,50 +253,8 @@ def test():
     print('-------------------------')
 
 
-def line(p1, p2):
-    A = (p1[1] - p2[1])
-    B = (p2[0] - p1[0])
-    C = (p1[0]*p2[1] - p2[0]*p1[1])
-    return(A, B, -C)
-
-def intersection(L1, L2):
-    D  = L1[0] * L2[1] - L1[1] * L2[0]
-    Dx = L1[2] * L2[1] - L1[1] * L2[2]
-    Dy = L1[0] * L2[2] - L1[2] * L2[0]
-    if D != 0:
-        x = Dx / D
-        y = Dy / D
-        return(x,y)
-    else:
-        return(False)
-
-def test_line_intersection():
-    L1 = line([0,1], [2,3])
-    L2 = line([2,3], [0,4])
-
-    R = intersection(L1, L2)
-    if R:
-        print("Intersection detected:", R)
-    else:
-        print("No single intersection point detected")
 
 
-def get_joint_positions(arm):
-        """This method finds the (x,y) coordinates of each joint"""
-
-        x = np.array([ 0, 
-            arm.L[0]*np.cos(arm.q[0]),
-            arm.L[0]*np.cos(arm.q[0]) + arm.L[1]*np.cos(arm.q[0]+arm.q[1]),
-            arm.L[0]*np.cos(arm.q[0]) + arm.L[1]*np.cos(arm.q[0]+arm.q[1]) + 
-                arm.L[2]*np.cos(np.sum(arm.q)) ]) + window.width/2
-
-        y = np.array([ 0, 
-            arm.L[0]*np.sin(arm.q[0]),
-            arm.L[0]*np.sin(arm.q[0]) + arm.L[1]*np.sin(arm.q[0]+arm.q[1]),
-            arm.L[0]*np.sin(arm.q[0]) + arm.L[1]*np.sin(arm.q[0]+arm.q[1]) + 
-                arm.L[2]*np.sin(np.sum(arm.q)) ])
-
-        return np.array([x, y]).astype('int')
 
 test()
 
