@@ -16,7 +16,7 @@ def generate_random_xy_point(xlim,ylim):
     y = np.random.uniform(ylim[0],ylim[1],1)
     return((x,y))
 def generate_n_random_xy_points(n):
-    return([generate_random_xy_point(xlim=[0,500], ylim = [0,500]) for x in range(n)])
+    return([generate_random_xy_point(xlim=[-500,500], ylim = [0,500]) for x in range(n)])
 
 def line_segment(joint_positions, i):
         first_point = (joint_positions[0][i], joint_positions[1][i])
@@ -68,7 +68,7 @@ def plot_one_position(line_segments):
 
 def test_with_one_arm():
     arm1 = Arm.Arm3Link(L = np.array([300,200,100]))
-    for xy_pair in generate_n_random_xy_points(1):
+    for xy_pair in generate_n_random_xy_points(100):
         arm1.snap_arm_to_endpoint_position(xy_pair)
         list_of_line_segments = extract_line_segments(arm1.get_joint_positions())
         plot_one_position(list_of_line_segments)
