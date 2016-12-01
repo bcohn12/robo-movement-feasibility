@@ -12,13 +12,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
+import math
 import numpy as np
 import pyglet
-from IPython.core.debugger import Tracer
+import ipdb
 
 import time
 
 import Arm
+
+def generate_random_xy_point(xlim,ylim):
+    x = np.random.uniform(xlim[0],xlim[1],1)
+    y = np.random.uniform(ylim[0],ylim[1],1)
+    return((x,y))
+def randomly_pick_samples_of_xy_endpoints(arm,n):
+    generate_random_xy_point(xlim=[0,500], ylim = [0,500])
+        
 
 def plot(): 
     """A function for plotting an arm, and having it calculate the 
@@ -43,8 +52,9 @@ def plot():
 
     # create an instance of the arm
     firstArm = Arm.Arm3Link(L = np.array([300,200,100]))
-    arm2 = Arm.Arm3Link(L = np.array([200,50,50]))
+    arm2 = Arm.Arm3Link(L = np.array([200,50,50]), q = [math.pi/2, math.pi/2, 0])
     arm3 = Arm.Arm3Link(L = np.array([50,100,10]))
+    firstArm_xy_database = randomly_pick_samples_of_xy_endpoints(firstArm, 10)
     # make our window for drawin'
     window = pyglet.window.Window()
     label = pyglet.text.Label('Mouse (x,y)', font_name='Futura', 
@@ -64,6 +74,12 @@ def plot():
         draw_joint_positions(window.secondArm)
         draw_joint_positions(window.thirdArm)
     def draw_joint_positions(joint_positions):
+        for i in range(3): 
+            pyglet.graphics.draw(2, pyglet.gl.GL_LINES, ('v2i', 
+                (joint_positions[0][i], joint_positions[1][i], 
+                 joint_positions[0][i+1], joint_positions[1][i+1])))
+
+    def get_line_segment_points(joint_positions):
         for i in range(3): 
             pyglet.graphics.draw(2, pyglet.gl.GL_LINES, ('v2i', 
                 (joint_positions[0][i], joint_positions[1][i], 
