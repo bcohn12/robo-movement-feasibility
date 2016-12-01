@@ -25,7 +25,7 @@ import scipy.optimize
 
 class Arm3Link:
 
-    def __init__(self, q=None, q0=None, L=None):
+    def __init__(self, q=None, q0=None, L=None, x_displacement=None, y_displacement=None):
         """Set up the basic parameters of the arm.
         All lists are in order [shoulder, elbow, wrist].
 
@@ -35,6 +35,9 @@ class Arm3Link:
             the default (resting state) joint configuration
         L : np.array
             the arm segment lengths
+
+        x_displacement: 
+        y_displacement
         """
         # initial joint angles
         self.q = [math.pi/4, math.pi/4, 0] if q is None else q
@@ -42,9 +45,10 @@ class Arm3Link:
         self.q0 = np.array([math.pi/4, math.pi/4, 0]) if q0 is None else q0
         # arm segment lengths
         self.L = np.array([1, 1, 1]) if L is None else L
-
-        self.max_angles = [math.pi/2.0, math.pi, math.pi/4]
-        self.min_angles = [0, 0, -math.pi/4]
+        self.max_angles = [2*math.pi, 2*math.pi, 2*math.pi]
+        self.min_angles = [-2*math.pi, -2*math.pi, -2*math.pi]
+        self.x_displacement = 0 if x_displacement is None else x_displacement
+        self.y_displacement = 0 if y_displacement is None else y_displacement
 
 
     def snap_arm_to_endpoint_position(self, xy_endpoint_position_tuple):
@@ -52,17 +56,17 @@ class Arm3Link:
 
     def get_joint_positions(self):
         """This method finds the (x,y) coordinates of each joint"""
-        window_width = 640 #set to match original frames
+         #set to match original frames
         x = np.array([ 0, 
             self.L[0]*np.cos(self.q[0]),
             self.L[0]*np.cos(self.q[0]) + self.L[1]*np.cos(self.q[0]+self.q[1]),
             self.L[0]*np.cos(self.q[0]) + self.L[1]*np.cos(self.q[0]+self.q[1]) + 
-                self.L[2]*np.cos(np.sum(self.q)) ]) + window_width/2
+                self.L[2]*np.cos(np.sum(self.q)) ]) + self.x_displacement
         y = np.array([ 0, 
             self.L[0]*np.sin(self.q[0]),
             self.L[0]*np.sin(self.q[0]) + self.L[1]*np.sin(self.q[0]+self.q[1]),
             self.L[0]*np.sin(self.q[0]) + self.L[1]*np.sin(self.q[0]+self.q[1]) + 
-                self.L[2]*np.sin(np.sum(self.q)) ])
+                self.L[2]*np.sin(np.sum(self.q)) ]) + self.y_displacement
         return(np.array([x, y]).astype('int'))
 
     def get_xy(self, q=None):

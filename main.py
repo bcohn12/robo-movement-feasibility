@@ -12,11 +12,11 @@ import seaborn as sns
 np.random.seed(sum(map(ord, "aesthetics")))
 
 def generate_random_xy_point(xlim,ylim):
-    x = np.random.uniform(xlim[0],xlim[1],1)
-    y = np.random.uniform(ylim[0],ylim[1],1)
+    x = np.random.randint(xlim[0],xlim[1],1)
+    y = np.random.randint(ylim[0],ylim[1],1)
     return((x,y))
 def generate_n_random_xy_points(n):
-    return([generate_random_xy_point(xlim=[-500,500], ylim = [0,500]) for x in range(n)])
+    return([generate_random_xy_point(xlim=[-600,600], ylim = [-600,600]) for x in range(n)])
 
 def line_segment(joint_positions, i):
         first_point = (joint_positions[0][i], joint_positions[1][i])
@@ -54,24 +54,29 @@ def test_line_intersection():
         print("No single intersection point detected")
 
 
-def plot_one_position(line_segments):
+def plot_one_position(line_segments, xy_pair, x_displacement, y_displacement):
     plt.figure(time.time() * 1000)
-    x_vals = [320] + [x[1][0] for x in line_segments]
-    y_vals = [0]   + [x[1][1] for x in line_segments]
+    x_vals = [x_displacement] + [x[1][0] for x in line_segments]
+    y_vals = [y_displacement]   + [x[1][1] for x in line_segments]
+    x_target = x_displacement + xy_pair[0]
+    y_target = y_displacement + xy_pair[1]
     plt.plot(x_vals, y_vals)
+    plt.scatter(x_target,y_target, s=80, marker='+')
     print("Just plotted ")
-    plt.xlim([0,640])
-    plt.ylim([0,640])
-    plt.savefig('output/file' + str(time.time() * 1000) + '.png')
+    plt.xlim([-640,640])
+    plt.ylim([-640,640])
+    plt.savefig('output/file' + str(time.time() * 1000) + '.pdf')
     plt.close()
 
-
 def test_with_one_arm():
-    arm1 = Arm.Arm3Link(L = np.array([300,200,100]))
-    for xy_pair in generate_n_random_xy_points(100):
+    arm1 = Arm.Arm3Link(L = np.array([300,200,100]), x_displacement = 320, y_displacement = 0)
+    for xy_pair in generate_n_random_xy_points(160):
         arm1.snap_arm_to_endpoint_position(xy_pair)
-        list_of_line_segments = extract_line_segments(arm1.get_joint_positions())
-        plot_one_position(list_of_line_segments)
+        list_of_line_segments = extract_line_segments(
+            arm1.get_joint_positions()
+            )
+        plot_one_position(list_of_line_segments, xy_pair, arm1.x_displacement, arm1.y_displacement)
+        print(xy_pair)
         print(list_of_line_segments)
    
 
