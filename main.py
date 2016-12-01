@@ -18,20 +18,6 @@ def generate_random_xy_point(xlim,ylim):
 def generate_n_random_xy_points(n):
     return([generate_random_xy_point(xlim=[-600,600], ylim = [-600,600]) for x in range(n)])
 
-def line_segment(joint_positions, i):
-    first_point = (joint_positions[0][i], joint_positions[1][i])
-    second_point = (joint_positions[0][i+1], joint_positions[1][i+1])
-    return(first_point, second_point)
-def extract_line_segments(joint_positions):
-    list_of_line_segments = [line_segment(joint_positions,i) for i in range(3)]
-    return(list_of_line_segments)
-
-def line(p1, p2):
-    A = (p1[1] - p2[1])
-    B = (p2[0] - p1[0])
-    C = (p1[0]*p2[1] - p2[0]*p1[1])
-    return(A, B, -C)
-
 def intersection(L1, L2):
     D  = L1[0] * L2[1] - L1[1] * L2[0]
     Dx = L1[2] * L2[1] - L1[1] * L2[2]
@@ -39,7 +25,7 @@ def intersection(L1, L2):
     if D != 0:
         x = Dx / D
         y = Dy / D
-        return(x,y)
+        return(True)
     else:
         return(False)
 
@@ -72,9 +58,7 @@ def test_with_one_arm():
     arm1 = Arm.Arm3Link(L = np.array([300,200,100]), x_displacement = 320, y_displacement = 0)
     for xy_pair in generate_n_random_xy_points(160):
         arm1.snap_arm_to_endpoint_position(xy_pair)
-        list_of_line_segments = extract_line_segments(
-            arm1.get_joint_positions()
-            )
+        list_of_line_segments = arm1.extract_line_segments()
         plot_one_position(list_of_line_segments, xy_pair, arm1.x_displacement, arm1.y_displacement)
         print(xy_pair)
         print(list_of_line_segments)
@@ -84,8 +68,8 @@ def intersection_between_arms(arm1,arm2):
     a1_lines = arm1.get_lines_with_C()
     a2_lines = arm2.get_lines_with_C()
     segment_indices = [0,1,2]
-    res = [intersection(arm1_segments[i], arm2_segments[j]) for i in segment_indices for j in segment_indices]
-    return(res)    
+    res = [intersection(a1_lines[i], a2_lines[j]) for i in segment_indices for j in segment_indices]
+    return(res)
 
 def arms_intersecting_test():
     arm1 = Arm.Arm3Link(L = np.array([300,200,100]),x_displacement=320,y_displacement=0)
@@ -94,12 +78,44 @@ def arms_intersecting_test():
     arm2_taskpoint = generate_n_random_xy_points(1)[0]
     arm1.snap_arm_to_endpoint_position(arm1_taskpoint)
     arm2.snap_arm_to_endpoint_position(arm2_taskpoint)
-    intersection_between_arms(arm1,arm2)
-    ipdb.set_trace()
+    intersection_report = intersection_between_arms(arm1,arm2)
+    print("intersection_report")
+    print(intersection_report)
+    print("arm1.extract_line_segments")
+    print(arm1.extract_line_segments())
+    print("arm2.extract_line_segments")
+    print(arm2.extract_line_segments())
+    plot_multiple_arms([(arm1,arm1_taskpoint,"black"),(arm2, arm2_taskpoint, "green")])
+
+#returns a tuple constructed with:
+# (arm1_joint_x_vals,arm1_joint_y_vals)
+# (arm1_x_target,arm1_y_target)
+def get_vals_with_target(arm, arm_xy):
+    arm_joint_x_vals = [arm.x_displacement] + [x[1][0] for x in arm.extract_line_segments()]
+    arm_joint_y_vals = [arm.y_displacement] + [x[1][1] for x in arm.extract_line_segments()]
+    arm_x_target = arm.x_displacement + arm_xy[0]
+    arm_y_target = arm.y_displacement + arm_xy[1]
+    return((arm_joint_x_vals,arm_joint_y_vals), (arm_x_target,arm_y_target))
+    
+def apply_arm_and_target_to_plt(arm, arm_xy, col):
+    arm_joint_xy, arm_xy  = get_vals_with_target(arm,arm_xy)
+    plt.plot(arm_joint_xy[0], arm_joint_xy[1], c=col)
+    plt.scatter(arm_xy[0],arm_xy[1], s=80, marker='+')
+
+def plot_multiple_arms(list_of_triples_of_arm_and_XY_and_col):
+    plt.figure(time.time() * 1000)
+    [apply_arm_and_target_to_plt(arm, arm_xy, col) for arm,arm_xy,col in list_of_triples_of_arm_and_XY_and_col]
+
+    print("Just plotted ")
+    plt.xlim([-640,640])
+    plt.ylim([-640,640])
+    plt.savefig('output/file' + str(time.time() * 1000) + '.pdf')
+    plt.close()
+
 
 
 arms_intersecting_test()
-test_with_one_arm()
+# test_with_one_arm()
 print('done')
 
 

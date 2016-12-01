@@ -69,8 +69,27 @@ class Arm3Link:
                 self.L[2]*np.sin(np.sum(self.q)) ]) + self.y_displacement
         return(np.array([x, y]).astype('int'))
 
+
+    def extract_line_segments(self):
+
+        def line_segment(joint_positions, i):
+            first_point = (joint_positions[0][i], joint_positions[1][i])
+            second_point = (joint_positions[0][i+1], joint_positions[1][i+1])
+            return(first_point, second_point)
+
+        list_of_line_segments = [line_segment(self.get_joint_positions(),i) for i in range(3)]
+        return(list_of_line_segments)
+
+
     def get_lines_with_C(self):
-        lines = [line(x[0],x[1]) for x in extract_line_segments(self.get_joint_positions())]
+        
+        def line(p1, p2):
+            A = (p1[1] - p2[1])
+            B = (p2[0] - p1[0])
+            C = (p1[0]*p2[1] - p2[0]*p1[1])
+            return(A, B, -C)
+
+        lines = [line(x[0],x[1]) for x in self.extract_line_segments()]
         return(lines)
 
     def get_xy(self, q=None):
