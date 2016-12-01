@@ -118,12 +118,12 @@ def plot_multiple_arms(list_of_triples_of_arm_and_XY_and_col):
     print("Just plotted ")
     plt.xlim([-10,10])
     plt.ylim([-10,10])
-    plt.savefig('output/file' + str(time.time() * 1000) + '.pdf')
+    plt.savefig('output/file' + str(time.time() * 1000) + '.png')
     plt.close()
 
 
 
-arms_intersecting_test()
+[arms_intersecting_test() for x in range(1000)]
 # test_with_one_arm()
 print('done')
 
