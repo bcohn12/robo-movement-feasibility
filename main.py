@@ -71,29 +71,43 @@ def arms_intersecting_test():
     arm1 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=0,y_displacement=0)
     arm1_taskpoint = arm1.snap_arm_to_new_XY_target()
 
-    arm2 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=0,y_displacement=0)
+    arm2 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=5,y_displacement=0)
     arm2_taskpoint = arm2.snap_arm_to_new_XY_target()
 
-    arm3 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=0,y_displacement=0)
+    arm3 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=8,y_displacement=8)
     arm3_taskpoint = arm3.snap_arm_to_new_XY_target()
     
 
-    arm4 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=0,y_displacement=0)
+    arm4 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=1,y_displacement=1)
     arm4_taskpoint = arm4.snap_arm_to_new_XY_target()
 
+    arm5 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=2,y_displacement=1)
+    arm5_taskpoint = arm5.snap_arm_to_new_XY_target()
 
-    intersection_report = intersection_between_arms(arm1,arm2)
-    print("intersection_report")
-    print(intersection_report)
-    print("arm1.extract_line_segments")
-    print(arm1.extract_line_segments())
-    print("arm2.extract_line_segments")
-    print(arm2.extract_line_segments())
+    print(sum([sum(intersection_between_arms(arm1,arm2)),
+    sum(intersection_between_arms(arm1,arm3)),
+    sum(intersection_between_arms(arm1,arm4)),
+    sum(intersection_between_arms(arm1,arm5)),
+    sum(intersection_between_arms(arm2,arm3)),
+    sum(intersection_between_arms(arm2,arm4)),
+    sum(intersection_between_arms(arm2,arm5)),
+    sum(intersection_between_arms(arm3,arm4)),
+    sum(intersection_between_arms(arm3,arm5)),
+    sum(intersection_between_arms(arm4,arm5))]))
+
+
+    print("Intersection report")
+    # print(intersection_report)
+    # print("Arm 1 Extracted line segments")
+    # print(arm1.extract_line_segments())
+    # print("Arm 2 Extracted line segments")
+    # print(arm2.extract_line_segments())
     plot_multiple_arms([
         (arm1,arm1_taskpoint,"black"),
         (arm2, arm2_taskpoint, "green"),
         (arm3, arm3_taskpoint, "grey"),
-        (arm4, arm4_taskpoint, "purple")
+        (arm4, arm4_taskpoint, "purple"),
+        (arm5, arm5_taskpoint, "yellow")
         ])
 
 #returns a tuple constructed with:
@@ -114,8 +128,6 @@ def apply_arm_and_target_to_plt(arm, arm_xy, col):
 def plot_multiple_arms(list_of_triples_of_arm_and_XY_and_col):
     plt.figure(time.time() * 1000)
     [apply_arm_and_target_to_plt(arm, arm_xy, col) for arm,arm_xy,col in list_of_triples_of_arm_and_XY_and_col]
-
-    print("Just plotted ")
     plt.xlim([-10,10])
     plt.ylim([-10,10])
     plt.savefig('output/file' + str(time.time() * 1000) + '.png')
