@@ -69,6 +69,10 @@ class Arm3Link:
                 self.L[2]*np.sin(np.sum(self.q)) ]) + self.y_displacement
         return(np.array([x, y]).astype('int'))
 
+    def get_lines_with_C(self):
+        lines = [line(x[0],x[1]) for x in extract_line_segments(self.get_joint_positions())]
+        return(lines)
+
     def get_xy(self, q=None):
         """Returns the corresponding hand xy coordinates for
         a given set of joint angle values [shoulder, elbow, wrist],
