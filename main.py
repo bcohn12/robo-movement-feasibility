@@ -169,23 +169,27 @@ def plot_multiple_arms(list_of_triples_of_arm_and_XY_and_col):
 
 tic = time.time()
 intersection_values = [arms_intersecting_test() for x in range(1)]
+print(intersection_values)
 print_time_elapsed_from(tic)
 
 tic = time.time()
 intersection_values = [arms_intersecting_test() for x in range(10)]
+print(intersection_values)
 print_time_elapsed_from(tic)
 
-tic = time.time()
-intersection_values = [arms_intersecting_test() for x in range(100)]
-print_time_elapsed_from(tic)
+# tic = time.time()
+# intersection_values = [arms_intersecting_test() for x in range(100)]
+# print(intersection_values)
+# print_time_elapsed_from(tic)
 
-tic = time.time()
-intersection_values = [arms_intersecting_test() for x in range(1000)]
-print_time_elapsed_from(tic)
+# tic = time.time()
+# intersection_values = [arms_intersecting_test() for x in range(1000)]
+# print(intersection_values)
+# print_time_elapsed_from(tic)
 
-tic = time.time()
-intersection_values = [arms_intersecting_test() for x in range(10000)]
-print_time_elapsed_from(tic)
+# tic = time.time()
+# intersection_values = [arms_intersecting_test() for x in range(10000)]
+# print_time_elapsed_from(tic)
 
 
 

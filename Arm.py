@@ -23,7 +23,7 @@ import numpy as np
 import scipy.optimize
 
 
-##helper functions
+##helper functions for random point generation.
 def generate_random_xy_point(xlim,ylim):
     x = np.random.randint(xlim[0],xlim[1],1)
     y = np.random.randint(ylim[0],ylim[1],1)
@@ -32,22 +32,34 @@ def generate_random_xy_point(xlim,ylim):
 def generate_n_random_xy_points(n, xlim, ylim):
     return([generate_random_xy_point(xlim=xlim, ylim = ylim) for x in range(n)])
 
+def point_is_in_circle(prospective_xy_point, outer_radius):
+    x = prospective_xy_point[0]
+    y = prospective_xy_point[1]
+    result = x**2 + y**2 < outer_radius**2
+    return(result)
 
-def uar_sample_from_circle(x_center,y_center, outer_radius, inner_radius):
-    
-    def point_is_in_circle(prospective_xy_point, xy_center, outer_radius, inner_radius):
-        x = prospective_xy_point[0]
-        y = prospective_xy_point[1]
-        x_squared_portion = (x - xy_center[0])**2
-        y_squared_portion = (y - xy_center[1])**2
-        result = (x_squared_portion + y_squared_portion) < outer_radius**2
-        return(result)
-
+def uar_sample_from_circle(outer_radius):
     while True:            
-        x = np.random.uniform(-outer_radius,outer_radius) + x_center
-        y = np.random.uniform(-outer_radius,outer_radius) + y_center
-        if point_is_in_circle([x,y],[x_center,y_center], outer_radius, inner_radius):
+        x = np.random.uniform(-outer_radius,outer_radius)
+        y = np.random.uniform(-outer_radius,outer_radius)
+        if point_is_in_circle([x,y], outer_radius):
             return(x,y)
+
+def xy_not_in_circle(x,y,radius):
+    if point_is_in_circle((x,y),radius):
+        return(False)
+    else:
+        return(True)
+
+# warning - if the outer and inner are very close together, it will get incredibly slow. if you want to make it faster, reimplement with something like this:
+# https://bl.ocks.org/mbostock/d8b1e0a25467e6034bb9
+def uar_sample_from_annulus(outer_radius,inner_radius):
+    while 1==1:
+        x,y = uar_sample_from_circle(outer_radius)
+        if xy_not_in_circle(x,y,inner_radius):
+            return(x,y)
+        else:
+            pass #keep collecting points!
 
 
 class Arm3Link:
@@ -81,12 +93,10 @@ class Arm3Link:
     def snap_arm_to_endpoint_position(self, xy_endpoint_position_tuple):
         self.q = self.inv_kin([xy_endpoint_position_tuple[0], xy_endpoint_position_tuple[1]])
     
-
     def snap_arm_to_new_XY_target(self, x_center,y_center, outer_radius, inner_radius):
-        arm_XY_target = uar_sample_from_circle(x_center,y_center, outer_radius, inner_radius)
-        ipdb.set_trace()
-        self.snap_arm_to_endpoint_position(arm_XY_target)
-        return(arm_XY_target)
+        xy = uar_sample_from_annulus(outer_radius, inner_radius)
+        self.snap_arm_to_endpoint_position(xy)
+        return(xy)
 
     def get_joint_positions(self):
         """This method finds the (x,y) coordinates of each joint"""
