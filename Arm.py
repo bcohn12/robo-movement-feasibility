@@ -33,6 +33,23 @@ def generate_n_random_xy_points(n, xlim, ylim):
     return([generate_random_xy_point(xlim=xlim, ylim = ylim) for x in range(n)])
 
 
+def uar_sample_from_circle(x_center,y_center, outer_radius, inner_radius):
+    
+    def point_is_in_circle(prospective_xy_point, xy_center, outer_radius, inner_radius):
+        x = prospective_xy_point[0]
+        y = prospective_xy_point[1]
+        x_squared_portion = (x - xy_center[0])**2
+        y_squared_portion = (y - xy_center[1])**2
+        result = (x_squared_portion + y_squared_portion) < outer_radius**2
+        return(result)
+
+    while True:            
+        x = np.random.uniform(-outer_radius,outer_radius) + x_center
+        y = np.random.uniform(-outer_radius,outer_radius) + y_center
+        if point_is_in_circle([x,y],[x_center,y_center], outer_radius, inner_radius):
+            return(x,y)
+
+
 class Arm3Link:
 
     def __init__(self, q=None, q0=None, L=None, x_displacement=None, y_displacement=None):
@@ -65,8 +82,9 @@ class Arm3Link:
         self.q = self.inv_kin([xy_endpoint_position_tuple[0], xy_endpoint_position_tuple[1]])
     
 
-    def snap_arm_to_new_XY_target(self, xlim,ylim):
-        arm_XY_target = generate_n_random_xy_points(1, xlim, ylim)[0]
+    def snap_arm_to_new_XY_target(self, x_center,y_center, outer_radius, inner_radius):
+        arm_XY_target = uar_sample_from_circle(x_center,y_center, outer_radius, inner_radius)
+        ipdb.set_trace()
         self.snap_arm_to_endpoint_position(arm_XY_target)
         return(arm_XY_target)
 
