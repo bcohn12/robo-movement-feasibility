@@ -12,24 +12,57 @@ import seaborn as sns
 np.random.seed(sum(map(ord, "aesthetics")))
 
 
+from numpy import ones,vstack
+from numpy.linalg import lstsq
+# takes in the list of two points (as tuples)
+# returns a tuple of the slope m and the intercept b s.t. y=mx+b
+def get_slope_and_intercept(list_of_points = [(1,5),(3,4)]):
+    x_coords, y_coords = zip(*list_of_points)
+    A = vstack([x_coords,ones(len(x_coords))]).T
+    m, c = lstsq(A, y_coords)[0]
+    return((m,c))
+
+#via http://stackoverflow.com/questions/328107/how-can-you-determine-a-point-is-between-two-other-points-on-a-line-segment
+#modified so elements are put in as lists of 2 elements, not dictionaries.
+def isBetween(a, b, c, epsilon=0.0001):
+    crossproduct = (c[1] - a[1]) * (b[0] - a[0]) - (c[0] - a[0]) * (b[1] - a[1])
+    if abs(crossproduct) > epsilon : return False   # (or != 0 if using integers)
+
+    dotproduct = (c[0] - a[0]) * (b[0] - a[0]) + (c[1] - a[1])*(b[1] - a[1])
+    if dotproduct < 0 : return False
+
+    squaredlengthba = (b[0] - a[0])*(b[0] - a[0]) + (b[1] - a[1])*(b[1] - a[1])
+    if dotproduct > squaredlengthba: return False
+
+    return True
 
 def intersection(L1, L2):
     D  = L1[0] * L2[1] - L1[1] * L2[0]
     Dx = L1[2] * L2[1] - L1[1] * L2[2]
     Dy = L1[0] * L2[2] - L1[2] * L2[0]
+    point1 = L1[3]
+    point2 = L1[4]
+    #if there is an intersection ever
     if D != 0:
         x = Dx / D
         y = Dy / D
-        return(True)
+
+        if isBetween(point1,point2,[x,y]):
+            return(True)
+        else:
+            return(False)
+    #totally co-linear or parallel
     else:
         return(False)
 
 def test_line_intersection():
-    L1 = line([0,1], [2,3])
-    L2 = line([2,3], [0,4])
+    p1 = [0,1], [2,3]
+    p2 = [2,3], [0,4]
+    L1 = line(p1)
+    L2 = line(p2)
 
-    R = intersection(L1, L2)
-    if R:
+    R = intersection(L1, L2, p1, p2)
+    if R!=False:
         print("Intersection detected:", R)
     else:
         print("No single intersection point detected")
@@ -64,27 +97,28 @@ def intersection_between_arms(arm1,arm2):
     a2_lines = arm2.get_lines_with_C()
     segment_indices = [0,1,2]
     res = [intersection(a1_lines[i], a2_lines[j]) for i in segment_indices for j in segment_indices]
+
     return(res)
 
 
-def arms_intersecting_test():
-    arm1 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=0,y_displacement=0)
+def arms_intersecting_test(plot=True):
+    arm1 = Arm.Arm3Link(L = np.array([5,1,1]),x_displacement=-20,y_displacement=0)
     arm1_taskpoint = arm1.snap_arm_to_new_XY_target()
 
-    arm2 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=5,y_displacement=0)
+    arm2 = Arm.Arm3Link(L = np.array([5,1,1]),x_displacement=-10,y_displacement=0)
     arm2_taskpoint = arm2.snap_arm_to_new_XY_target()
 
-    arm3 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=8,y_displacement=8)
+    arm3 = Arm.Arm3Link(L = np.array([5,1,1]),x_displacement=0,y_displacement=0)
     arm3_taskpoint = arm3.snap_arm_to_new_XY_target()
     
 
-    arm4 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=1,y_displacement=1)
+    arm4 = Arm.Arm3Link(L = np.array([5,1,1]),x_displacement=10,y_displacement=0)
     arm4_taskpoint = arm4.snap_arm_to_new_XY_target()
 
-    arm5 = Arm.Arm3Link(L = np.array([3,2,1]),x_displacement=2,y_displacement=1)
+    arm5 = Arm.Arm3Link(L = np.array([5,1,1]),x_displacement=20,y_displacement=0)
     arm5_taskpoint = arm5.snap_arm_to_new_XY_target()
 
-    print(sum([sum(intersection_between_arms(arm1,arm2)),
+    num_intersections = sum([sum(intersection_between_arms(arm1,arm2)),
     sum(intersection_between_arms(arm1,arm3)),
     sum(intersection_between_arms(arm1,arm4)),
     sum(intersection_between_arms(arm1,arm5)),
@@ -93,22 +127,16 @@ def arms_intersecting_test():
     sum(intersection_between_arms(arm2,arm5)),
     sum(intersection_between_arms(arm3,arm4)),
     sum(intersection_between_arms(arm3,arm5)),
-    sum(intersection_between_arms(arm4,arm5))]))
-
-
-    print("Intersection report")
-    # print(intersection_report)
-    # print("Arm 1 Extracted line segments")
-    # print(arm1.extract_line_segments())
-    # print("Arm 2 Extracted line segments")
-    # print(arm2.extract_line_segments())
-    plot_multiple_arms([
-        (arm1,arm1_taskpoint,"black"),
-        (arm2, arm2_taskpoint, "green"),
-        (arm3, arm3_taskpoint, "grey"),
-        (arm4, arm4_taskpoint, "purple"),
-        (arm5, arm5_taskpoint, "yellow")
-        ])
+    sum(intersection_between_arms(arm4,arm5))])
+    if plot==True:
+        plot_multiple_arms([
+            (arm1, arm1_taskpoint,"black"),
+            (arm2, arm2_taskpoint, "green"),
+            (arm3, arm3_taskpoint, "grey"),
+            (arm4, arm4_taskpoint, "purple"),
+            (arm5, arm5_taskpoint, "yellow")
+            ])
+    return(num_intersections)
 
 #returns a tuple constructed with:
 # (arm1_joint_x_vals,arm1_joint_y_vals)
@@ -135,9 +163,10 @@ def plot_multiple_arms(list_of_triples_of_arm_and_XY_and_col):
 
 
 
-[arms_intersecting_test() for x in range(1000)]
+intersection_values = [arms_intersecting_test() for x in range(10)]
 # test_with_one_arm()
 print('done')
+print(intersection_values)
 
 
 

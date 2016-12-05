@@ -103,7 +103,7 @@ class Arm3Link:
             A = (p1[1] - p2[1])
             B = (p2[0] - p1[0])
             C = (p1[0]*p2[1] - p2[0]*p1[1])
-            return(A, B, -C)
+            return(A, B, -C, p1, p2)
 
         lines = [line(x[0],x[1]) for x in self.extract_line_segments()]
         return(lines)
