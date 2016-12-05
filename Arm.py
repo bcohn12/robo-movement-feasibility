@@ -23,9 +23,19 @@ import numpy as np
 import scipy.optimize
 
 
+##helper functions
+def generate_random_xy_point(xlim,ylim):
+    x = np.random.randint(xlim[0],xlim[1],1)
+    y = np.random.randint(ylim[0],ylim[1],1)
+    return((x,y))
+
+def generate_n_random_xy_points(n, xlim, ylim):
+    return([generate_random_xy_point(xlim=xlim, ylim = ylim) for x in range(n)])
+
+
 class Arm3Link:
 
-    def __init__(self, q=None, q0=None, L=None):
+    def __init__(self, q=None, q0=None, L=None, x_displacement=None, y_displacement=None):
         """Set up the basic parameters of the arm.
         All lists are in order [shoulder, elbow, wrist].
 
@@ -35,6 +45,9 @@ class Arm3Link:
             the default (resting state) joint configuration
         L : np.array
             the arm segment lengths
+
+        x_displacement: 
+        y_displacement
         """
         # initial joint angles
         self.q = [math.pi/4, math.pi/4, 0] if q is None else q
@@ -42,9 +55,58 @@ class Arm3Link:
         self.q0 = np.array([math.pi/4, math.pi/4, 0]) if q0 is None else q0
         # arm segment lengths
         self.L = np.array([1, 1, 1]) if L is None else L
+        self.max_angles = [2*math.pi, 2*math.pi, 2*math.pi]
+        self.min_angles = [-2*math.pi, -2*math.pi, -2*math.pi]
+        self.x_displacement = 0 if x_displacement is None else x_displacement
+        self.y_displacement = 0 if y_displacement is None else y_displacement
 
-        self.max_angles = [math.pi/2.0, math.pi, math.pi/4]
-        self.min_angles = [0, 0, -math.pi/4]
+
+    def snap_arm_to_endpoint_position(self, xy_endpoint_position_tuple):
+        self.q = self.inv_kin([xy_endpoint_position_tuple[0], xy_endpoint_position_tuple[1]])
+    
+
+    def snap_arm_to_new_XY_target(self, xlim,ylim):
+        arm_XY_target = generate_n_random_xy_points(1, xlim, ylim)[0]
+        self.snap_arm_to_endpoint_position(arm_XY_target)
+        return(arm_XY_target)
+
+    def get_joint_positions(self):
+        """This method finds the (x,y) coordinates of each joint"""
+         #set to match original frames
+        x = np.array([ 0, 
+            self.L[0]*np.cos(self.q[0]),
+            self.L[0]*np.cos(self.q[0]) + self.L[1]*np.cos(self.q[0]+self.q[1]),
+            self.L[0]*np.cos(self.q[0]) + self.L[1]*np.cos(self.q[0]+self.q[1]) + 
+                self.L[2]*np.cos(np.sum(self.q)) ]) + self.x_displacement
+        y = np.array([ 0, 
+            self.L[0]*np.sin(self.q[0]),
+            self.L[0]*np.sin(self.q[0]) + self.L[1]*np.sin(self.q[0]+self.q[1]),
+            self.L[0]*np.sin(self.q[0]) + self.L[1]*np.sin(self.q[0]+self.q[1]) + 
+                self.L[2]*np.sin(np.sum(self.q)) ]) + self.y_displacement
+        return(np.array([x, y]).astype('int'))
+
+
+    def extract_line_segments(self):
+
+        def line_segment(joint_positions, i):
+            first_point = (joint_positions[0][i], joint_positions[1][i])
+            second_point = (joint_positions[0][i+1], joint_positions[1][i+1])
+            return(first_point, second_point)
+
+        list_of_line_segments = [line_segment(self.get_joint_positions(),i) for i in range(3)]
+        return(list_of_line_segments)
+
+
+    def get_lines_with_C(self):
+
+        def line(p1, p2):
+            A = (p1[1] - p2[1])
+            B = (p2[0] - p1[0])
+            C = (p1[0]*p2[1] - p2[0]*p1[1])
+            return(A, B, -C, p1, p2)
+
+        lines = [line(x[0],x[1]) for x in self.extract_line_segments()]
+        return(lines)
 
     def get_xy(self, q=None):
         """Returns the corresponding hand xy coordinates for
@@ -234,50 +296,8 @@ def test():
     print('-------------------------')
 
 
-def line(p1, p2):
-    A = (p1[1] - p2[1])
-    B = (p2[0] - p1[0])
-    C = (p1[0]*p2[1] - p2[0]*p1[1])
-    return(A, B, -C)
-
-def intersection(L1, L2):
-    D  = L1[0] * L2[1] - L1[1] * L2[0]
-    Dx = L1[2] * L2[1] - L1[1] * L2[2]
-    Dy = L1[0] * L2[2] - L1[2] * L2[0]
-    if D != 0:
-        x = Dx / D
-        y = Dy / D
-        return(x,y)
-    else:
-        return(False)
-
-def test_line_intersection():
-    L1 = line([0,1], [2,3])
-    L2 = line([2,3], [0,4])
-
-    R = intersection(L1, L2)
-    if R:
-        print("Intersection detected:", R)
-    else:
-        print("No single intersection point detected")
 
 
-def get_joint_positions(arm):
-        """This method finds the (x,y) coordinates of each joint"""
-
-        x = np.array([ 0, 
-            arm.L[0]*np.cos(arm.q[0]),
-            arm.L[0]*np.cos(arm.q[0]) + arm.L[1]*np.cos(arm.q[0]+arm.q[1]),
-            arm.L[0]*np.cos(arm.q[0]) + arm.L[1]*np.cos(arm.q[0]+arm.q[1]) + 
-                arm.L[2]*np.cos(np.sum(arm.q)) ]) + window.width/2
-
-        y = np.array([ 0, 
-            arm.L[0]*np.sin(arm.q[0]),
-            arm.L[0]*np.sin(arm.q[0]) + arm.L[1]*np.sin(arm.q[0]+arm.q[1]),
-            arm.L[0]*np.sin(arm.q[0]) + arm.L[1]*np.sin(arm.q[0]+arm.q[1]) + 
-                arm.L[2]*np.sin(np.sum(arm.q)) ])
-
-        return np.array([x, y]).astype('int')
 
 test()
 
