@@ -102,40 +102,26 @@ def intersection_between_arms(arm1,arm2):
     return(res)
 
 
-def uar_sample_from_circle(x_center,y_center, outer_radius, inner_radius):
-    
-    def point_is_in_ring(prospective_xy_point, xy_center, outer_radius, inner_radius):
-        x = prospective_xy_point[0]
-        y = prospective_xy_point[1]
-        x_squared_portion = (x - xy_center[0])**2
-        y_squared_portion = (y - xy_center[1])**2
-        result = inner_radius**2 < (x_squared_portion + y_squared_portion) < outer_radius**2
-        return(result)
 
-    while True:            
-        x = np.random.uniform(-outer_radius,outer_radius)
-        y = np.random.uniform(-outer_radius,outer_radius)
-        if point_is_in_ring([x,y],[x_center,y_center], outer_radius, inner_radius):
-            return(x,y)
+def arms_intersecting_test(plot=True, spacing = 100):
 
+    x_start_displacement= -200
+    x_center_vector = np.arange(5)*spacing + x_start_displacement
 
-def arms_intersecting_test(plot=True):
+    arm1 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=x_center_vector[0],y_displacement=0)
+    arm1_taskpoint = arm1.snap_arm_to_new_XY_target(x_center=x_center_vector[0],y_center=0, outer_radius=70, inner_radius=0)
 
-    arm1 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=-200,y_displacement=0)
-    arm1_taskpoint = arm1.snap_arm_to_new_XY_target(xlim=[-200,200], ylim=[-700,70])
+    arm2 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=x_center_vector[1],y_displacement=0)
+    arm2_taskpoint = arm2.snap_arm_to_new_XY_target(x_center=x_center_vector[1],y_center=0, outer_radius=70, inner_radius=0)
 
-    arm2 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=-100,y_displacement=0)
-    arm2_taskpoint = arm2.snap_arm_to_new_XY_target(xlim=[-200,200], ylim=[-700,70])
+    arm3 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=x_center_vector[2],y_displacement=0)
+    arm3_taskpoint = arm3.snap_arm_to_new_XY_target(x_center=x_center_vector[2],y_center=0, outer_radius=70, inner_radius=0)
 
-    arm3 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=0,y_displacement=0)
-    arm3_taskpoint = arm3.snap_arm_to_new_XY_target(xlim=[-200,200], ylim=[-700,70])
-    
+    arm4 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=x_center_vector[3],y_displacement=0)
+    arm4_taskpoint = arm4.snap_arm_to_new_XY_target(x_center=x_center_vector[3],y_center=0, outer_radius=70, inner_radius=0)
 
-    arm4 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=100,y_displacement=0)
-    arm4_taskpoint = arm4.snap_arm_to_new_XY_target(xlim=[-200,200], ylim=[-700,70])
-
-    arm5 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=200,y_displacement=0)
-    arm5_taskpoint = arm5.snap_arm_to_new_XY_target(xlim=[-200,200], ylim=[-700,70])
+    arm5 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=x_center_vector[4],y_displacement=0)
+    arm5_taskpoint = arm5.snap_arm_to_new_XY_target(x_center=x_center_vector[4],y_center=0, outer_radius=70, inner_radius=0)
 
     num_intersections = sum([sum(intersection_between_arms(arm1,arm2)),
     sum(intersection_between_arms(arm1,arm3)),
@@ -173,39 +159,60 @@ def apply_arm_and_target_to_plt(arm, arm_xy, col):
     plt.scatter(arm_xy[0],arm_xy[1], s=80, marker='+')
 
 def print_time_elapsed_from(initial_time):
-    print(str(datetime.timedelta(seconds=time.time() - tic)))
+    print(str(datetime.timedelta(seconds=time.time() - initial_time)))
 
 def plot_multiple_arms(list_of_triples_of_arm_and_XY_and_col):
     plt.figure(time.time() * 1000)
     [apply_arm_and_target_to_plt(arm, arm_xy, col) for arm,arm_xy,col in list_of_triples_of_arm_and_XY_and_col]
-    plt.xlim([-300,300])
-    plt.ylim([-100,100])
+    plt.xlim([-400,400])
+    plt.ylim([-400,400])
     plt.savefig('output/file' + str(time.time() * 1000) + '.png')
     plt.close()
 
 
-tic = time.time()
-intersection_values = [arms_intersecting_test() for x in range(1)]
-print_time_elapsed_from(tic)
+def timing_analysis():
+    tic = time.time()
+    intersection_values = [arms_intersecting_test(plot=False) for x in range(1)]
+    print(intersection_values)
+    print_time_elapsed_from(tic)
 
-tic = time.time()
-intersection_values = [arms_intersecting_test() for x in range(10)]
-print_time_elapsed_from(tic)
+    tic = time.time()
+    intersection_values = [arms_intersecting_test(plot=False) for x in range(10)]
+    print(intersection_values)
+    print_time_elapsed_from(tic)
 
-tic = time.time()
-intersection_values = [arms_intersecting_test() for x in range(100)]
-print_time_elapsed_from(tic)
+    tic = time.time()
+    intersection_values = [arms_intersecting_test(plot=False) for x in range(100)]
+    print(intersection_values)
+    print_time_elapsed_from(tic)
 
-tic = time.time()
-intersection_values = [arms_intersecting_test() for x in range(1000)]
-print_time_elapsed_from(tic)
-
-tic = time.time()
-intersection_values = [arms_intersecting_test() for x in range(10000)]
-print_time_elapsed_from(tic)
-
+    tic = time.time()
+    intersection_values = [arms_intersecting_test(plot=False) for x in range(1000)]
+    print(intersection_values)
+    print_time_elapsed_from(tic)
+##
 
 
+
+def collision_counts_per_anchor_distance(replicates):
+    a500 = [arms_intersecting_test(plot=False, spacing = 500) for x in range(replicates)]
+    a200 = [arms_intersecting_test(plot=False, spacing = 200) for x in range(replicates)]
+    a100 = [arms_intersecting_test(plot=False, spacing = 100) for x in range(replicates)]
+    a50  = [arms_intersecting_test(plot=False, spacing = 50) for x in range(replicates)]
+    a20  = [arms_intersecting_test(plot=False, spacing = 20) for x in range(replicates)]
+    a10  = [arms_intersecting_test(plot=False, spacing = 10) for x in range(replicates)]
+    a5   = [arms_intersecting_test(plot=False, spacing = 5) for x in range(replicates)]
+    a2   = [arms_intersecting_test(plot=False, spacing = 2) for x in range(replicates)]
+    print("a500")    ; print(a500)
+    print("a200")    ; print(a200)
+    print("a100")    ; print(a100)
+    print("a50 ")   ; print(a50 )
+    print("a20 ")   ; print(a20 )
+    print("a10 ")   ; print(a10 )
+    print("a5  ")   ; print(a5  )
+    print("a2  ")   ; print(a2  )
+# collision_counts_per_anchor_distance(30)
+timing_analysis()
 
 # test_with_one_arm()
 print('done')
