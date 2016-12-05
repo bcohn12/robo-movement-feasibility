@@ -211,7 +211,8 @@ def collision_counts_per_anchor_distance(replicates):
     print("a10 ")   ; print(a10 )
     print("a5  ")   ; print(a5  )
     print("a2  ")   ; print(a2  )
-# collision_counts_per_anchor_distance(30)
+    
+collision_counts_per_anchor_distance(30)
 timing_analysis()
 
 # test_with_one_arm()
