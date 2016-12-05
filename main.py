@@ -122,20 +122,19 @@ def uar_sample_from_circle(x_center,y_center, outer_radius, inner_radius):
 def arms_intersecting_test(plot=True):
 
     arm1 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=-200,y_displacement=0)
-    arm1_taskpoint = arm1.snap_arm_to_new_XY_target(xlim=[-200,200], ylim=[-700,70])
+    arm1_taskpoint = arm1.snap_arm_to_new_XY_target(x=-200,y=0, outer_radius=70, inner_radius=30)
 
     arm2 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=-100,y_displacement=0)
-    arm2_taskpoint = arm2.snap_arm_to_new_XY_target(xlim=[-200,200], ylim=[-700,70])
+    arm2_taskpoint = arm2.snap_arm_to_new_XY_target(x=-100,y=0, outer_radius=70, inner_radius=30)
 
     arm3 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=0,y_displacement=0)
-    arm3_taskpoint = arm3.snap_arm_to_new_XY_target(xlim=[-200,200], ylim=[-700,70])
-    
+    arm3_taskpoint = arm3.snap_arm_to_new_XY_target(x=0,y=0, outer_radius=70, inner_radius=30)
 
     arm4 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=100,y_displacement=0)
-    arm4_taskpoint = arm4.snap_arm_to_new_XY_target(xlim=[-200,200], ylim=[-700,70])
+    arm4_taskpoint = arm4.snap_arm_to_new_XY_target(x=100,y=0, outer_radius=70, inner_radius=30)
 
     arm5 = Arm.Arm3Link(L = np.array([50,10,10]),x_displacement=200,y_displacement=0)
-    arm5_taskpoint = arm5.snap_arm_to_new_XY_target(xlim=[-200,200], ylim=[-700,70])
+    arm5_taskpoint = arm5.snap_arm_to_new_XY_target(x=200,y=0, outer_radius=70, inner_radius=30)
 
     num_intersections = sum([sum(intersection_between_arms(arm1,arm2)),
     sum(intersection_between_arms(arm1,arm3)),
