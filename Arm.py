@@ -29,8 +29,8 @@ def generate_random_xy_point(xlim,ylim):
     y = np.random.randint(ylim[0],ylim[1],1)
     return((x,y))
 
-def generate_n_random_xy_points(n):
-    return([generate_random_xy_point(xlim=[-6,6], ylim = [-6,6]) for x in range(n)])
+def generate_n_random_xy_points(n, xlim, ylim):
+    return([generate_random_xy_point(xlim=xlim, ylim = ylim) for x in range(n)])
 
 
 class Arm3Link:
@@ -65,8 +65,8 @@ class Arm3Link:
         self.q = self.inv_kin([xy_endpoint_position_tuple[0], xy_endpoint_position_tuple[1]])
     
 
-    def snap_arm_to_new_XY_target(self):
-        arm_XY_target = generate_n_random_xy_points(1)[0]
+    def snap_arm_to_new_XY_target(self, xlim,ylim):
+        arm_XY_target = generate_n_random_xy_points(1, xlim, ylim)[0]
         self.snap_arm_to_endpoint_position(arm_XY_target)
         return(arm_XY_target)
 
